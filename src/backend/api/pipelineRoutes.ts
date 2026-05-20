@@ -31,7 +31,7 @@ router.post('/pipelines/:pipelineId/trigger', requirePermission('execute:pipelin
 
   try {
   // 當前測試直接將畫布 config 塞在 dynamicPayload.config 中
-  // 在 Trinity JCS 中，Webhook/API 觸發會透過 Controller 分派給 Worker
+  // 在  JCS 中，Webhook/API 觸發會透過 Controller 分派給 Worker
   if (dynamicPayload.config) {
       // 確保將動態送來的 pipeline config 存入 Store 以供 MetaMan 分析
       addPipelineToStore(dynamicPayload.config);
@@ -122,6 +122,36 @@ router.get('/jcs/jobs/:jobId/logs', async (req, res) => {
     } catch (err) {
         res.status(500).json({ error: String(err) });
     }
+});
+
+// 重新執行失敗/完成的任務
+router.post('/jcs/jobs/:jobId/retry', async (req, res) => {
+  try {
+    const queue = jcsController.queue;
+    const job = await queue.getJob(req.params.jobId);
+    if (!job) {
+      return res.status(404).json({ error: 'Job not found' });
+    }
+    await job.retry();
+    res.json({ success: true, message: `Job ${req.params.jobId} queued for retry` });
+  } catch (err) {
+    res.status(500).json({ error: String(err) });
+  }
+});
+
+// 強制中止/移除排隊或執行中的任務
+router.delete('/jcs/jobs/:jobId', async (req, res) => {
+  try {
+    const queue = jcsController.queue;
+    const job = await queue.getJob(req.params.jobId);
+    if (!job) {
+      return res.status(404).json({ error: 'Job not found' });
+    }
+    await job.remove();
+    res.json({ success: true, message: `Job ${req.params.jobId} removed` });
+  } catch (err) {
+    res.status(500).json({ error: String(err) });
+  }
 });
 
 export default router;
