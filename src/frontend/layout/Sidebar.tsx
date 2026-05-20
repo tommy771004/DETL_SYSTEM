@@ -2,11 +2,10 @@ import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Activity, Server, Settings, Share2, ShieldCheck, Database, FileText, Lock, List, PanelLeftClose, PanelLeft } from 'lucide-react';
 import clsx from 'clsx';
-import JobTree from '../components/JobTree/JobTree';
 
 const navGroups = [
   {
-    titleKey: 'trinity_core',
+    titleKey: '_core',
     items: [
       { id: 'designer', icon: Activity, labelKey: 'designer' },
       { id: 'console', icon: Server, labelKey: 'console' },
@@ -84,14 +83,7 @@ export default function Sidebar({ activeTab, setActiveTab, collapsed, setCollaps
           </div>
         ))}
 
-        {/* Job Tree Section */}
-        {!collapsed && (
-          <div className="flex-1 min-h-0 flex flex-col">
-            <JobTree selectedJobId="3" onSelectJob={(id: string) => {
-               if (id === '3') setActiveTab('designer');
-            }} />
-          </div>
-        )}
+        {/* Job Hierarchy 在 Designer 左側面板中顯示 */}
       </div>
     </aside>
   );
