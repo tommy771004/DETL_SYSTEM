@@ -1,6 +1,6 @@
 /**
  * @file DataQueue.ts
- * @description Trinity 資料佇列 (Data Queue) 機制。
+ * @description  資料佇列 (Data Queue) 機制。
  * 非同步緩衝與流量控制機制，部署於讀取器、轉換器與寫入器之間，
  * 透過非同步的佇列機制吸收各節點間 I/O 速度的巨大差異，防止記憶體溢出（OOM）並確保管線順暢。
  */
