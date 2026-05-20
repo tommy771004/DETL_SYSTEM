@@ -9,6 +9,7 @@ export default function JcsDashboard() {
   const [jobsData, setJobsData] = useState<any>({ waiting: [], active: [], completed: [], failed: [] });
   const [loading, setLoading] = useState(true);
   const [selectedInstance, setSelectedInstance] = useState<any | null>(null);
+  const [actionLoading, setActionLoading] = useState<Record<string, boolean>>({});
 
   const fetchJobs = async () => {
     try {
@@ -24,9 +25,36 @@ export default function JcsDashboard() {
 
   useEffect(() => {
     fetchJobs();
-    const interval = setInterval(fetchJobs, 5000); // Poll every 5 seconds
+    const interval = setInterval(fetchJobs, 5000);
     return () => clearInterval(interval);
   }, []);
+
+  const handleRetry = async (jobId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setActionLoading(prev => ({ ...prev, [jobId]: true }));
+    try {
+      await fetch(`/api/jcs/jobs/${jobId}/retry`, { method: 'POST' });
+      await fetchJobs();
+    } catch (err) {
+      console.error('Retry failed', err);
+    } finally {
+      setActionLoading(prev => ({ ...prev, [jobId]: false }));
+    }
+  };
+
+  const handleAbort = async (jobId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setActionLoading(prev => ({ ...prev, [jobId]: true }));
+    try {
+      await fetch(`/api/jcs/jobs/${jobId}`, { method: 'DELETE' });
+      if (selectedInstance?.id === jobId) setSelectedInstance(null);
+      await fetchJobs();
+    } catch (err) {
+      console.error('Abort failed', err);
+    } finally {
+      setActionLoading(prev => ({ ...prev, [jobId]: false }));
+    }
+  };
 
   const allInstances = [
     ...jobsData.failed.map((j: any) => ({ ...j, status: 'failed' })),
@@ -150,13 +178,23 @@ export default function JcsDashboard() {
                             <td className="px-6 py-4 text-right">
                                <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                                  {instance.status === 'failed' || instance.status === 'success' ? (
-                                   <button title={t('retry')} className="p-2 text-slate-400 hover:text-blue-400 hover:bg-blue-400/10 rounded-xl transition-all border border-transparent hover:border-blue-400/20 shadow-sm">
-                                     <RotateCw className="w-4 h-4" />
+                                   <button
+                                     title={t('retry')}
+                                     onClick={(e) => handleRetry(instance.id, e)}
+                                     disabled={actionLoading[instance.id]}
+                                     className="p-2 text-slate-400 hover:text-blue-400 hover:bg-blue-400/10 rounded-xl transition-all border border-transparent hover:border-blue-400/20 shadow-sm disabled:opacity-40"
+                                   >
+                                     <RotateCw className={clsx("w-4 h-4", actionLoading[instance.id] && "animate-spin")} />
                                    </button>
                                  ) : null}
-                                 {instance.status === 'running' ? (
-                                   <button title={t('abort')} className="p-2 text-slate-400 hover:text-rose-400 hover:bg-rose-400/10 rounded-xl transition-all border border-transparent hover:border-rose-400/20 shadow-sm">
-                                     <Square className="w-4 h-4" />
+                                 {instance.status === 'running' || instance.status === 'waiting' ? (
+                                   <button
+                                     title={t('abort')}
+                                     onClick={(e) => handleAbort(instance.id, e)}
+                                     disabled={actionLoading[instance.id]}
+                                     className="p-2 text-slate-400 hover:text-rose-400 hover:bg-rose-400/10 rounded-xl transition-all border border-transparent hover:border-rose-400/20 shadow-sm disabled:opacity-40"
+                                   >
+                                     <Square className={clsx("w-4 h-4", actionLoading[instance.id] && "animate-pulse")} />
                                    </button>
                                  ) : null}
                                </div>
