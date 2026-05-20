@@ -32,6 +32,8 @@ import mdmRoutes from './src/backend/api/mdmRoutes.js';
 import streamRoutes from './src/backend/api/streamRoutes.js';
 import unstructuredRoutes from './src/backend/api/unstructuredRoutes.js';
 import dpRoutes from './src/backend/api/dpRoutes.js';
+import adminRoutes from './src/backend/api/adminRoutes.js';
+import jcsHierarchyRoutes from './src/backend/api/jcsHierarchyRoutes.js';
 
 import { createServer as createViteServer } from 'vite';
 
@@ -104,6 +106,8 @@ async function startServer() {
   app.use('/api/stream', streamRoutes);
   app.use('/api/unstructured', unstructuredRoutes);
   app.use('/api/dp', dpRoutes);
+  app.use('/api/admin', adminRoutes);
+  app.use('/api/jcs/hierarchy', jcsHierarchyRoutes);
 
   // 健康檢查
   app.get('/api/health', (req, res) => {
