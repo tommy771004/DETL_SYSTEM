@@ -32,7 +32,7 @@ export interface PipelineConfig {
 
 export type PluginCategory = 'reader' | 'transformer' | 'writer';
 
-// 節點執行引擎的介面 (重構符合 Trinity架構)
+// 節點執行引擎的介面 (重構符合 架構)
 export interface IPluginNode {
   type: string;
   category: PluginCategory;
