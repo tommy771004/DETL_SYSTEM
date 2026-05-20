@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Briefcase, Folder, FolderOpen, FileCode, Edit2, Trash2, Copy, PlayCircle, Plus, MoreVertical } from 'lucide-react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { Briefcase, Folder, FolderOpen, FileCode, Edit2, Trash2, Copy, PlayCircle, Plus, MoreVertical, Lock, Unlock } from 'lucide-react';
 import clsx from 'clsx';
 import { useTranslation } from 'react-i18next';
 
@@ -8,37 +8,11 @@ export interface TreeNode {
   name: string;
   type: 'entity' | 'category' | 'job';
   active?: boolean;
+  checkedOutBy?: string;
   children?: TreeNode[];
 }
 
-const initialData: TreeNode[] = [
-  {
-    id: '1',
-    name: 'Corp_ETL',
-    type: 'entity',
-    children: [
-      {
-        id: '2',
-        name: 'ETL_Jobs',
-        type: 'category',
-        active: true,
-        children: [
-          { id: '3', name: 'nation_job', type: 'job' },
-          { id: '4', name: 'sales_daily_job', type: 'job' }
-        ]
-      },
-      {
-        id: '5',
-        name: 'Reporting',
-        type: 'category',
-        active: false,
-        children: []
-      }
-    ]
-  }
-];
-
-// Helper functions to recursively update the tree
+// 保留純前端 tree 操作 helper（不走 API，用於 optimistic update）
 const updateTreeName = (nodes: TreeNode[], id: string, newName: string): TreeNode[] => {
   return nodes.map(node => {
      if (node.id === id) return { ...node, name: newName };
@@ -59,21 +33,21 @@ const deleteFromTree = (nodes: TreeNode[], id: string): TreeNode[] => {
      children: node.children ? deleteFromTree(node.children, id) : undefined
   }));
 };
-const addToTree = (nodes: TreeNode[], parentId: string | null, newNode: TreeNode): TreeNode[] => {
+const insertIntoTree = (nodes: TreeNode[], parentId: string | null, newNode: TreeNode): TreeNode[] => {
   if (!parentId) return [...nodes, newNode];
   return nodes.map(node => {
      if (node.id === parentId) {
         return { ...node, children: [...(node.children || []), newNode] };
      }
-     if (node.children) return { ...node, children: addToTree(node.children, parentId, newNode) };
+     if (node.children) return { ...node, children: insertIntoTree(node.children, parentId, newNode) };
      return node;
   });
 };
 
 export default function JobTree({ onSelectJob, selectedJobId }: any) {
   const { t } = useTranslation();
-  const [data, setData] = useState<TreeNode[]>(initialData);
-  const [expanded, setExpanded] = useState<Record<string, boolean>>({'1': true, '2': true});
+  const [data, setData] = useState<TreeNode[]>([]);
+  const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   
   // Inline Edit State
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -84,6 +58,22 @@ export default function JobTree({ onSelectJob, selectedJobId }: any) {
   const [menuNode, setMenuNode] = useState<TreeNode | null>(null);
   
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // ─── 載入後端樹狀資料 ──────────────────────────────────────
+  const loadTree = useCallback(async () => {
+    try {
+      const res = await fetch('/api/jcs/hierarchy');
+      const resp = await res.json();
+      const tree: TreeNode[] = resp.tree || [];
+      setData(tree);
+      // 預設展開第一層
+      const initial: Record<string, boolean> = {};
+      tree.forEach(n => { initial[n.id] = true; (n.children || []).forEach(c => { initial[c.id] = true; }); });
+      setExpanded(prev => ({ ...initial, ...prev }));
+    } catch (e) { console.error('JobTree load error:', e); }
+  }, []);
+
+  useEffect(() => { loadTree(); }, [loadTree]);
 
   // Close Context Menu when clicking outside
   useEffect(() => {
@@ -111,37 +101,77 @@ export default function JobTree({ onSelectJob, selectedJobId }: any) {
     setMenuCoords({ x: e.clientX, y: e.clientY });
   };
 
-  const handleCreateNode = (parentId: string | null, type: 'entity' | 'category' | 'job') => {
-    const newNode: TreeNode = {
-      id: Date.now().toString(),
-      name: type === 'entity' ? 'New_Entity' : type === 'category' ? 'New_Category' : 'New_Job',
-      type,
-      children: type !== 'job' ? [] : undefined,
-      active: type === 'category' ? true : undefined,
-    };
-    
-    setData(prev => addToTree(prev, parentId, newNode));
-    
-    if (parentId) {
-      toggleExpand(parentId, true);
+  const handleCreateNode = async (parentId: string | null, type: 'entity' | 'category' | 'job') => {
+    const defaultName = type === 'entity' ? 'New_Entity' : type === 'category' ? 'New_Category' : 'New_Job';
+    try {
+      const res = await fetch('/api/jcs/hierarchy', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ parentId, type, name: defaultName })
+      });
+      if (res.ok) {
+        const newNode: TreeNode = await res.json();
+        setData(prev => insertIntoTree(prev, parentId, newNode));
+        if (parentId) toggleExpand(parentId, true);
+        setEditingId(newNode.id);
+        setEditValue(newNode.name);
+      }
+    } catch (e) {
+      // fallback: optimistic local create
+      const newNode: TreeNode = {
+        id: Date.now().toString(), name: defaultName, type,
+        children: type !== 'job' ? [] : undefined,
+        active: type === 'category' ? true : undefined,
+      };
+      setData(prev => insertIntoTree(prev, parentId, newNode));
+      if (parentId) toggleExpand(parentId, true);
+      setEditingId(newNode.id);
+      setEditValue(newNode.name);
     }
-    
-    // Auto-trigger rename for newly created node
-    setEditingId(newNode.id);
-    setEditValue(newNode.name);
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (window.confirm(t('delete_confirm'))) {
+      try {
+        await fetch(`/api/jcs/hierarchy/${id}`, { method: 'DELETE' });
+      } catch (e) { /* optimistic */ }
       setData(prev => deleteFromTree(prev, id));
     }
   };
 
-  const submitEdit = () => {
+  const submitEdit = async () => {
     if (editingId && editValue.trim() !== '') {
       setData(prev => updateTreeName(prev, editingId, editValue.trim()));
+      try {
+        await fetch(`/api/jcs/hierarchy/${editingId}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name: editValue.trim() })
+        });
+      } catch (e) { /* best-effort */ }
     }
     setEditingId(null);
+  };
+
+  const handleToggleStatus = async (node: TreeNode) => {
+    setData(prev => updateTreeStatus(prev, node.id));
+    try {
+      await fetch(`/api/jcs/hierarchy/${node.id}/toggle`, { method: 'POST' });
+    } catch (e) { /* best-effort */ }
+  };
+
+  const handleCheckout = async (id: string) => {
+    try {
+      const res = await fetch(`/api/jcs/hierarchy/${id}/checkout`, { method: 'POST' });
+      if (res.ok) await loadTree();
+    } catch (e) { console.error(e); }
+  };
+
+  const handleCheckin = async (id: string) => {
+    try {
+      const res = await fetch(`/api/jcs/hierarchy/${id}/checkin`, { method: 'POST' });
+      if (res.ok) await loadTree();
+    } catch (e) { console.error(e); }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -186,7 +216,7 @@ export default function JobTree({ onSelectJob, selectedJobId }: any) {
                {t('rename')}
             </button>
             <button className="w-full text-left px-4 py-1.5 hover:bg-[var(--surface-hover)] text-[var(--text-primary)]"
-               onClick={() => { setMenuCoords(null); setData(prev => updateTreeStatus(prev, menuNode.id)); }}>
+               onClick={() => { setMenuCoords(null); handleToggleStatus(menuNode); }}>
                {t('toggle_schedule')}
             </button>
             <div className="h-px bg-[var(--border-subtle)] my-1"></div>
@@ -199,18 +229,28 @@ export default function JobTree({ onSelectJob, selectedJobId }: any) {
         {menuNode.type === 'job' && (
           <>
             <button className="w-full text-left px-4 py-1.5 hover:bg-[var(--surface-hover)] text-[var(--text-primary)]"
-               onClick={() => { setMenuCoords(null); onSelectJob(menuNode.id); }}>
+               onClick={() => { setMenuCoords(null); onSelectJob(menuNode.id, menuNode); }}>
                {t('open_in_designer')}
             </button>
             <button className="w-full text-left px-4 py-1.5 hover:bg-[var(--surface-hover)] text-[var(--text-primary)]"
                onClick={() => { 
                  setMenuCoords(null); 
                  console.log("Navigating to console for filtering job", menuNode.id); 
-                 // Implement navigation logic or event emitting if necessary
                }}>
                {t('open_in_monitor')}
             </button>
             <div className="h-px bg-[var(--border-subtle)] my-1"></div>
+            {menuNode.checkedOutBy ? (
+              <button className="w-full text-left px-4 py-1.5 hover:bg-[var(--surface-hover)] text-amber-400 flex items-center gap-2"
+                 onClick={() => { setMenuCoords(null); handleCheckin(menuNode.id); }}>
+                 <Unlock className="w-3.5 h-3.5" />{t('checkin')}
+              </button>
+            ) : (
+              <button className="w-full text-left px-4 py-1.5 hover:bg-[var(--surface-hover)] text-blue-400 flex items-center gap-2"
+                 onClick={() => { setMenuCoords(null); handleCheckout(menuNode.id); }}>
+                 <Lock className="w-3.5 h-3.5" />{t('checkout')}
+              </button>
+            )}
             <button className="w-full text-left px-4 py-1.5 hover:bg-[var(--surface-hover)] text-[var(--text-primary)]"
                onClick={() => { setMenuCoords(null); setEditingId(menuNode.id); setEditValue(menuNode.name); }}>
                {t('rename')}
@@ -243,7 +283,7 @@ export default function JobTree({ onSelectJob, selectedJobId }: any) {
            onClick={() => {
              if (isEditing) return;
              if (node.type !== 'job') toggleExpand(node.id);
-             else onSelectJob(node.id);
+             else onSelectJob(node.id, node);
            }}
            onDoubleClick={() => {
              if (node.type !== 'job' && !isEditing) {
@@ -256,7 +296,7 @@ export default function JobTree({ onSelectJob, selectedJobId }: any) {
            {/* Icon */}
            {node.type === 'entity' && <Briefcase className="w-4 h-4 text-blue-400 shrink-0" />}
            {node.type === 'category' && (isExpanded ? <FolderOpen className="w-4 h-4 text-amber-400 shrink-0" /> : <Folder className="w-4 h-4 text-amber-500 shrink-0" />)}
-           {node.type === 'job' && <FileCode className="w-4 h-4 text-emerald-400 shrink-0" />}
+           {node.type === 'job' && <FileCode className={clsx('w-4 h-4 shrink-0', node.checkedOutBy ? 'text-amber-400' : 'text-emerald-400')} />}
            
            {/* Name or Editor */}
            {isEditing ? (
