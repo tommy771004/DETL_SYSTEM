@@ -16,7 +16,7 @@ i18n
   .use(initReactI18next)
   .init({
     resources,
-    fallbackLng: 'zh-TW', // Default to zh-TW as per typical Trinity deployments in Taiwan
+    fallbackLng: 'zh-TW', // Default to zh-TW as per typical  deployments in Taiwan
     defaultNS: 'common',
     interpolation: {
       escapeValue: false, // React already escapes values
