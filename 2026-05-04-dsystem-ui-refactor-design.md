@@ -2,7 +2,7 @@
 
 **日期**：2026-05-04  
 **版本**：1.0  
-**方向**：方案 B — Trinity 現代化詮釋  
+**方向**：方案 B —  現代化詮釋  
 **範圍**：全部 11 個模組，設計一次到位，分階段實作
 
 ---
@@ -11,7 +11,7 @@
 
 | 面向 | 決策 |
 |------|------|
-| 重構目標 | 視覺重設計 + UX 架構重組 + 功能完整性，全面對標 Trinity 原始介面 |
+| 重構目標 | 視覺重設計 + UX 架構重組 + 功能完整性，全面對標  原始介面 |
 | 視覺風格 | 深色主題為主，支援淺色模式切換（雙主題） |
 | 國際化 | 全面 i18n，中文 / 英文即時切換（react-i18next） |
 | Job Tree | 完整 CRUD + 右鍵選單 + 跨介面導航 |
@@ -50,7 +50,7 @@
 --accent-blue-dim     /* 藍色背景淡版 */
 --accent-blue-text    /* 藍色文字 */
 
-/* Trinity 狀態色（兩主題語意保持一致） */
+/*  狀態色（兩主題語意保持一致） */
 --status-running-bg   /* 執行中背景 */
 --status-running-fg   /* 執行中文字 */
 --status-running-bar  /* 執行中進度條 / 色條 */
@@ -82,7 +82,7 @@
   --accent-blue: #2563eb;
   --accent-blue-dim: #1e3a5f;
   --accent-blue-text: #60a5fa;
-  /* Trinity 狀態色 */
+  /*  狀態色 */
   --status-running-bg: #0d1f35;  --status-running-fg: #93c5fd;  --status-running-bar: #3b82f6;
   --status-waiting-bg: #2d0a1e;  --status-waiting-fg: #f9a8d4;  --status-waiting-bar: #f472b6;
   --status-success-bg: #0a2118;  --status-success-fg: #6ee7b7;  --status-success-bar: #10b981;
@@ -107,7 +107,7 @@
   --accent-blue: #2563eb;
   --accent-blue-dim: #dbeafe;
   --accent-blue-text: #1d4ed8;
-  /* Trinity 狀態色（調整飽和度符合 WCAG AA） */
+  /*  狀態色（調整飽和度符合 WCAG AA） */
   --status-running-bg: #dbeafe;  --status-running-fg: #1e40af;  --status-running-bar: #1d4ed8;
   --status-waiting-bg: #fce7f3;  --status-waiting-fg: #9d174d;  --status-waiting-bar: #be185d;
   --status-success-bg: #d1fae5;  --status-success-fg: #065f46;  --status-success-bar: #065f46;
@@ -152,7 +152,7 @@ src/frontend/locales/
 - 呼叫 `i18next.changeLanguage()` 即時生效，無需重載
 - 語言偏好存入 `localStorage('dsystem-lang')`
 
-### 3.3 Trinity 狀態標籤對照
+### 3.3  狀態標籤對照
 
 | 狀態 | 英文 | 中文 |
 |------|------|------|
@@ -200,7 +200,7 @@ src/frontend/locales/
 
 | 群組 | 模組 |
 |------|------|
-| Trinity Core | JF Designer、Task Console、Admin UI |
+|  Core | JF Designer、Task Console、Admin UI |
 | Modules | Metaman、Data Quality、MDM、Streaming、UDM |
 | Security & Governance | IAM、Audit、Data Protection |
 
@@ -313,7 +313,7 @@ Category 節點右側：ON/OFF 切換徽章（點擊即切換，不需右鍵）�
 - Tab 可拖拉重排（決定執行順序）
 - `+ 新增步驟` 開啟 Step 類型選擇對話框
 
-**Step 類型清單**（對應 Trinity 10 種類型）：
+**Step 類型清單**（對應  10 種類型）：
 
 | 類型 | 描述 | 介面 |
 |------|------|------|
@@ -379,7 +379,7 @@ Category 節點右側：ON/OFF 切換徽章（點擊即切換，不需右鍵）�
 - 輸出欄位列表（可新增 / 刪除 / 排序）
 - 每個輸出欄位右側 `Edit Rule` 按鈕 → **Rule 編輯器 Modal**：
   - 內建函式庫（decode、trim、日期轉換、數學運算、字串處理）
-  - Trinity 內建變數（`${TXDATE}`、`${TXDATE1}`、`${TX2Y}` 等）
+  -  內建變數（`${TXDATE}`、`${TXDATE1}`、`${TX2Y}` 等）
   - 即時語法驗證
 
 **CSV 讀取器**：
@@ -408,7 +408,7 @@ Category 節點右側：ON/OFF 切換徽章（點擊即切換，不需右鍵）�
 
 ### 6.6 Job 屬性 Drawer
 
-Content Header 的「Job 屬性」按鈕 → 右側滑入 Drawer（含所有 Trinity Job Attributes，詳見 5.6 節）
+Content Header 的「Job 屬性」按鈕 → 右側滑入 Drawer（含所有  Job Attributes，詳見 5.6 節）
 
 ---
 
@@ -436,7 +436,7 @@ Content Header 的「Job 屬性」按鈕 → 右側滑入 Drawer（含所有 Tri
 
 **① 看板視圖（Kanban）**：
 - 四欄：等待中 / 執行中 / 已完成 / 失敗
-- 維持 Trinity 色彩語意（粉紅 / 深藍 / 綠 / 紅）
+- 維持  色彩語意（粉紅 / 深藍 / 綠 / 紅）
 - Job Card 升級：名稱 + Pipeline ID + 執行耗時 + 進度條（執行中）+ 讀寫筆數摘要（已完成）+ 錯誤訊息 + Retry 按鈕（失敗）
 - 卡片間移動觸發 fly-across 動畫
 - 新 Job 進入以 slide-in 動畫出現
