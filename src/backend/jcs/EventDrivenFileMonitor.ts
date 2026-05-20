@@ -1,6 +1,6 @@
 /**
  * @file EventDrivenFileMonitor.ts
- * @description Trinity JCS 事件驅動觸發機制
+ * @description  JCS 事件驅動觸發機制
  * 持續監控本地或遠端目錄檔案，驗證檔案數量、大小與完整性後，自動觸發下游作業。
  */
 import fs from 'fs';
