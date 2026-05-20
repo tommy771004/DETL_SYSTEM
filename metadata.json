@@ -1,0 +1,5 @@
+{
+  "name": "AI-ETL Platform",
+  "description": "Enterprise-grade AI-powered ETL platform built on Trinity JCS architecture. Supports dynamic pipelines, health monitoring, and IAM.",
+  "requestFramePermissions": []
+}

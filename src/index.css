@@ -1,0 +1,141 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+}
+
+@layer base {
+  :root {
+    /* Base Colors for Dark Mode (Default) */
+    --surface-base: #020617;
+    --surface-raised: #0f172a;
+    --surface-overlay: rgba(15, 23, 42, 0.6);
+    --border-subtle: rgba(255, 255, 255, 0.05);
+    --border-strong: rgba(255, 255, 255, 0.1);
+    
+    --text-primary: #f8fafc;
+    --text-secondary: #94a3b8;
+    --text-muted: #64748b;
+    
+    /* Brand & Accent Constraints */
+    --accent-blue: #3b82f6;
+    --accent-blue-dim: rgba(59, 130, 246, 0.1);
+    --accent-blue-text: #60a5fa;
+
+    /* Status Colors */
+    --status-success-bg: rgba(16, 185, 129, 0.1);
+    --status-success-fg: #10b981;
+    --status-success-bar: rgba(16, 185, 129, 0.2);
+    --status-failed-bg: rgba(239, 68, 68, 0.1);
+    --status-failed-fg: #ef4444;
+    --status-failed-bar: rgba(239, 68, 68, 0.2);
+
+    /* Liquid Glass Theme Variables */
+    --glass-bg: rgba(255, 255, 255, 0.02);
+    --glass-bg-hover: rgba(255, 255, 255, 0.05);
+    --glass-border: rgba(255, 255, 255, 0.08);
+    --glass-highlight: rgba(255, 255, 255, 0.15);
+    --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+    
+    /* Background blob colors */
+    --blob-1: rgba(37, 99, 235, 0.7); /* Blue */
+    --blob-2: rgba(79, 70, 229, 0.7); /* Indigo */
+  }
+
+  :root[data-theme="light"] {
+    /* Day mode / Light mode colors */
+    --surface-base: #f0f4f8;
+    --surface-raised: #ffffff;
+    --surface-overlay: rgba(255, 255, 255, 0.7);
+    --border-subtle: rgba(15, 23, 42, 0.05);
+    --border-strong: rgba(15, 23, 42, 0.1);
+    
+    --text-primary: #0f172a;
+    --text-secondary: #475569;
+    --text-muted: #64748b;
+    
+    /* Liquid Glass Theme Variables - Light */
+    --glass-bg: rgba(255, 255, 255, 0.4);
+    --glass-bg-hover: rgba(255, 255, 255, 0.6);
+    --glass-border: rgba(255, 255, 255, 0.8);
+    --glass-highlight: rgba(255, 255, 255, 0.9);
+    --glass-shadow: 0 8px 32px 0 rgba(30, 41, 59, 0.05);
+
+    /* Background blob colors */
+    --blob-1: rgba(96, 165, 250, 0.5); /* Blue */
+    --blob-2: rgba(167, 139, 250, 0.5); /* Purple */
+  }
+
+  body {
+    background: var(--surface-base);
+    color: var(--text-primary);
+    overflow: hidden;
+    transition: background-color 0.5s ease, color 0.5s ease;
+  }
+}
+
+/* Liquid Blob Effect Filter */
+#liquid-filter {
+  position: absolute;
+  width: 0;
+  height: 0;
+}
+
+.liquid-container {
+  filter: url('#liquid-blur');
+}
+
+.glass-card {
+  background: var(--glass-bg);
+  backdrop-filter: blur(24px) saturate(160%);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Inner reflection layer for cards */
+.glass-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--glass-highlight), transparent);
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.glass-interactive {
+  transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.glass-interactive:hover {
+  background: var(--glass-bg-hover);
+  border-color: var(--glass-highlight);
+  transform: translateY(-2px) scale(1.01);
+  box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.4);
+}
+
+/* Light mode specific hover shadow adjustments */
+:root[data-theme="light"] .glass-interactive:hover {
+  box-shadow: 0 12px 40px 0 rgba(30, 41, 59, 0.1);
+}
+
+/* Custom Scrollbar for Glass UI */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--glass-highlight);
+}

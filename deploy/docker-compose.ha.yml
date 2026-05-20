@@ -1,0 +1,103 @@
+version: '3.8'
+
+services:
+  # HAProxy: Load Balancer 負載平衡器
+  haproxy:
+    image: haproxy:2.4
+    ports:
+      - "3000:80"
+    volumes:
+      - ./haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
+    depends_on:
+      - controller-1
+      - controller-2
+
+  # Active Controller 節點 1
+  controller-1:
+    build:
+      context: ../
+    environment:
+      - NODE_ENV=production
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=dev_redis_password
+      - ROLE=controller
+    depends_on:
+      - redis
+
+  # Standby Controller 節點 2
+  controller-2:
+    build:
+      context: ../
+    environment:
+      - NODE_ENV=production
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=dev_redis_password
+      - ROLE=controller
+    depends_on:
+      - redis
+
+  # Worker 資料處理執行節點 1
+  worker-1:
+    build:
+      context: ../
+    environment:
+      - NODE_ENV=production
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=dev_redis_password
+      - ROLE=worker
+    depends_on:
+      - redis
+
+  # Worker 資料處理執行節點 2
+  worker-2:
+    build:
+      context: ../
+    environment:
+      - NODE_ENV=production
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=dev_redis_password
+      - ROLE=worker
+    depends_on:
+      - redis
+
+  # Worker 資料處理執行節點 3
+  worker-3:
+    build:
+      context: ../
+    environment:
+      - NODE_ENV=production
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=dev_redis_password
+      - ROLE=worker
+    depends_on:
+      - redis
+
+  # 狀態與佇列儲存 (Redis)
+  redis:
+    image: redis:6.2-alpine
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes --requirepass "dev_redis_password"
+    volumes:
+      - redis_data:/data
+
+  # 資料庫 (PostgreSQL for Metadata & Audit Logs)
+  postgres:
+    image: postgres:13-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=secret_password
+      - POSTGRES_DB=pipeline_db
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+
+volumes:
+  redis_data:
+  pg_data:

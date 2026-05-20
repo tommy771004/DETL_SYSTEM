@@ -1,0 +1,142 @@
+@import "tailwindcss";
+
+@theme {
+  --color-glass-base: rgba(255, 255, 255, 0.4);
+  --color-glass-border: rgba(255, 255, 255, 0.2);
+  --color-glass-shadow: rgba(0, 0, 0, 0.1);
+  --color-surface-base: var(--surface-base);
+  --color-surface-raised: var(--surface-raised);
+  --color-surface-overlay: var(--surface-overlay);
+  --color-surface-hover: var(--surface-hover);
+  --color-surface-active: var(--surface-active);
+  --color-border-subtle: var(--border-subtle);
+  --color-border-strong: var(--border-strong);
+  --color-border-focus: var(--border-focus);
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-muted: var(--text-muted);
+  --color-text-inverse: var(--text-inverse);
+  --color-accent-blue: var(--accent-blue);
+  --color-accent-blue-dim: var(--accent-blue-dim);
+  --color-accent-blue-text: var(--accent-blue-text);
+  --color-status-running-bg: var(--status-running-bg);
+  --color-status-running-fg: var(--status-running-fg);
+  --color-status-running-bar: var(--status-running-bar);
+  --color-status-waiting-bg: var(--status-waiting-bg);
+  --color-status-waiting-fg: var(--status-waiting-fg);
+  --color-status-waiting-bar: var(--status-waiting-bar);
+  --color-status-success-bg: var(--status-success-bg);
+  --color-status-success-fg: var(--status-success-fg);
+  --color-status-success-bar: var(--status-success-bar);
+  --color-status-failed-bg: var(--status-failed-bg);
+  --color-status-failed-fg: var(--status-failed-fg);
+  --color-status-failed-bar: var(--status-failed-bar);
+}
+
+:root, :root[data-theme="dark"] {
+  --surface-base: #0f1117;
+  --surface-raised: #161b27;
+  --surface-overlay: #1a2035;
+  --surface-hover: #1e2a3a;
+  --surface-active: #1e3a5f;
+  --border-subtle: #1e2a3a;
+  --border-strong: #2d3f53;
+  --border-focus: #ef4444; /* temp */
+  --text-primary: #e2e8f0;
+  --text-secondary: #94a3b8;
+  --text-muted: #4a5568;
+  --text-inverse: #ffffff;
+  --accent-blue: #2563eb;
+  --accent-blue-dim: #1e3a5f;
+  --accent-blue-text: #60a5fa;
+
+  --status-running-bg: #0d1f35;
+  --status-running-fg: #93c5fd;
+  --status-running-bar: #3b82f6;
+  --status-waiting-bg: #2d0a1e;
+  --status-waiting-fg: #f9a8d4;
+  --status-waiting-bar: #f472b6;
+  --status-success-bg: #0a2118;
+  --status-success-fg: #6ee7b7;
+  --status-success-bar: #10b981;
+  --status-failed-bg: #2d0a0a;
+  --status-failed-fg: #fca5a5;
+  --status-failed-bar: #ef4444;
+}
+
+:root[data-theme="light"] {
+  --surface-base: #f8fafc;
+  --surface-raised: #ffffff;
+  --surface-overlay: #f1f5f9;
+  --surface-hover: #e2e8f0;
+  --surface-active: #dbeafe;
+  --border-subtle: #e2e8f0;
+  --border-strong: #cbd5e1;
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #94a3b8;
+  --text-inverse: #ffffff;
+  --accent-blue: #2563eb;
+  --accent-blue-dim: #dbeafe;
+  --accent-blue-text: #1d4ed8;
+
+  --status-running-bg: #dbeafe;
+  --status-running-fg: #1e40af;
+  --status-running-bar: #1d4ed8;
+  --status-waiting-bg: #fce7f3;
+  --status-waiting-fg: #9d174d;
+  --status-waiting-bar: #be185d;
+  --status-success-bg: #d1fae5;
+  --status-success-fg: #065f46;
+  --status-success-bar: #065f46;
+  --status-failed-bg: #fee2e2;
+  --status-failed-fg: #991b1b;
+  --status-failed-bar: #991b1b;
+}
+
+body {
+  margin: 0;
+  background-color: var(--surface-base);
+  color: var(--text-primary);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  transition: background-color 200ms, color 200ms, border-color 200ms;
+  min-height: 100vh;
+}
+
+@keyframes liquidBg {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* Base Liquid Glass Utility */
+.glass-panel {
+  background: var(--color-glass-base);
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  border: 1px solid var(--color-glass-border);
+  box-shadow: 0 8px 32px var(--color-glass-shadow), inset 0 1px 1px rgba(255, 255, 255, 0.3);
+  border-radius: 24px;
+}
+
+.glass-btn {
+  background: rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(12px) saturate(150%);
+  -webkit-backdrop-filter: blur(12px) saturate(150%);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05), inset 0 1px 1px rgba(255,255,255,0.4);
+  border-radius: 12px;
+  color: #000;
+  font-weight: 500;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.glass-btn:hover {
+  background: rgba(255, 255, 255, 0.4);
+  transform: translateY(-1px) scale(1.02);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.1), inset 0 1px 1px rgba(255,255,255,0.6);
+}
+
+.glass-btn:active {
+  transform: translateY(1px) scale(0.98);
+}
