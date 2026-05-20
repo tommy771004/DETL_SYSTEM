@@ -6,7 +6,7 @@
 
 ## 專案概覽
 
-**ai-etl-platform** 是一個仿照 Trinity 企業資料整合架構設計的全端 ETL 平台，具備：
+**ai-etl-platform** 是一個仿照  企業資料整合架構設計的全端 ETL 平台，具備：
 
 - **視覺化 Pipeline 編輯器**（React + ReactFlow）
 - **分散式 DAG 執行引擎**（Node.js + TypeScript）
